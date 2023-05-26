@@ -66,7 +66,7 @@ app.post('/api/data', (req, res) => {
   res.status(200).json({ message: 'Datos recibidos correctamente' });
 });
 
-const port = process.env.PORT || 4000; 
-  app.listen(port, () => {
+const port = process.env.PORT || 3000; 
+  server.listen(port, () => {
     console.log(' 🚀 El servidor ha despegado en el puerto ', port);
   });
