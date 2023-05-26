@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WebSocket Client</title>
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    
+    th, td {
+      text-align: left;
+      padding: 8px;
+    }
+    
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+    
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    const ws = new WebSocket('ws://localhost:3000');
+    let airQualityChart;
+    let temperatureChart;
+    let pressureChart;
+    let altitudeChart;
+
+    ws.onopen = function () {
+      console.log('Conexión establecida con el servidor de WebSocket');
+    };
+
+    ws.onmessage = function (event) {
+      const data = JSON.parse(event.data);
+      console.log('Datos recibidos desde el servidor:');
+      console.log('Calidad del aire:', data.air_quality);
+      console.log('Temperatura:', data.temperature);
+      console.log('Presión:', data.pressure);
+      console.log('Altitud:', data.altitude);
+
+      // Actualizar las gráficas con los nuevos datos
+      updateChart(airQualityChart, data.air_quality);
+      updateChart(temperatureChart, data.temperature);
+      updateChart(pressureChart, data.pressure);
+      updateChart(altitudeChart, data.altitude);
+    };
+
+    function createChart(containerId, label, backgroundColor, borderColor) {
+      const container = document.getElementById(containerId);
+      const canvas = document.createElement('canvas');
+      container.appendChild(canvas);
+
+      const ctx = canvas.getContext('2d');
+      const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: label,
+              data: [],
+              backgroundColor: backgroundColor,
+              borderColor: borderColor,
+              borderWidth: 1,
+              fill: 'start'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              display: true
+            },
+            y: {
+              display: true,
+              beginAtZero: true
+            }
+          }
+        }
+      });
+
+      return chart;
+    }
+
+    function updateChart(chart, newData) {
+      chart.data.labels.push('');
+      chart.data.datasets[0].data.push(newData);
+      chart.update();
+    }
+
+    // Crear gráficas independientes
+    document.addEventListener('DOMContentLoaded', function () {
+      airQualityChart = createChart('air-quality-chart', 'Calidad del aire (PPM)', 'rgba(0, 123, 255, 0.5)', 'rgba(0, 123, 255, 1)');
+      temperatureChart = createChart('temperature-chart', 'Temperatura (C)', 'rgba(255, 99, 132, 0.5)', 'rgba(255, 99, 132, 1)');
+      pressureChart = createChart('pressure-chart', 'Presión (hPa)', 'rgba(75, 192, 192, 0.5)', 'rgba(75, 192, 192, 1)');
+      altitudeChart = createChart('altitude-chart', 'Altura (M)', 'rgba(255, 205, 86, 0.5)', 'rgba(255, 205, 86, 1)');
+    });
+
+  </script>
+</head>
+<body>
+  <div id="air-quality-chart"></div>
+  <div id="temperature-chart"></div>
+  <div id="pressure-chart"></div>
+  <div id="altitude-chart"></div>
+</body>
+</html>
